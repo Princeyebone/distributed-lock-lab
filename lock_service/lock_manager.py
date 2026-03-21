@@ -19,4 +19,14 @@ def release_lock(lock_key:str, worker_id:str):
         redis_client.delete(lock_key)
         return True
     
-    return False   
+    return False
+
+def renew_lock(lock_key:str, worker_id:str):
+    owner = redis_client.get(lock_key)
+
+    if owner == worker_id:
+        # Extend the TTL
+        result = redis_client.expire(lock_key, settings.LOCK_EXPIRY)
+        return bool(result)
+        
+    return False

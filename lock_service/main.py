@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from .lock_manager import acquire_lock, release_lock
+from .lock_manager import acquire_lock, release_lock, renew_lock
 
 app  = FastAPI(title="Lock service")
 
@@ -20,3 +20,15 @@ def release(lock_key:str, worker_id:str):
         "worker_id":worker_id,
         "lock_released":success
     }                                           
+
+@app.post("/lock/renew")
+def renew(lock_key: str, worker_id: str):
+    """
+    Renew an existing lock (extend TTL) if the worker is still the owner.
+    """
+    success = renew_lock(lock_key, worker_id)
+    return {
+        "lock_key": lock_key,
+        "worker_id": worker_id,
+        "lock_renewed": success
+    }
